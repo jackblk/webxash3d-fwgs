@@ -1,4 +1,5 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.png" type="image/png">
@@ -24,6 +25,7 @@
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 1;
             }
+
             100% {
                 transform: translate(-50%, -50%) scale(0.5);
                 opacity: 0.75;
@@ -35,6 +37,7 @@
                 transform: translate(-50%, -50%) scale(0.75);
                 opacity: 0.87;
             }
+
             100% {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 0;
@@ -91,19 +94,37 @@
         }
     </style>
 </head>
+
 <body>
-<img id="logo" alt="Logo" class="notDraggable" src="logo.png"/>
-<canvas id="canvas">
-</canvas>
-<form id="form">
-    <label>
-        Player name
-        <input id="username" type="text" required/>
-    </label>
-    <button type="submit">
-        Start
-    </button>
-</form>
-<p id="warning" class="notDraggable">If it's not starting, try to enable microphone and refresh</p>
+    <!-- <img id="logo" alt="Logo" class="notDraggable" src="logo.png"/> -->
+    <div id="logo" class="notDraggable">
+        <img src="logo.png" alt="Logo" />
+    </div>
+
+    <div id="progress" style="
+        position: absolute;
+        top: 60%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-family: sans-serif;
+        font-size: 24px;
+        text-align: center;
+        z-index: 3;
+    ">0%</div>
+
+    <canvas id="canvas">
+    </canvas>
+    <form id="form">
+        <label>
+            Player name
+            <input id="username" type="text" required />
+        </label>
+        <button id="start-button" type="submit" disabled>
+            Start
+        </button>
+    </form>
+    <p id="warning" class="notDraggable">If it's not starting, try to enable microphone and refresh</p>
 </body>
+
 </html>

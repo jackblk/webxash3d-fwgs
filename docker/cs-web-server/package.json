@@ -9,13 +9,13 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "dependencies": {
-  },
   "devDependencies": {
+    "cs16-client": "latest",
+    "esbuild": "^0.25.8",
+    "jszip": "^3.10.1",
+    "rollup": "^4.46.2",
     "typescript": "^5.8.3",
     "vite": "^7.0.6",
-    "cs16-client": "latest",
-    "jszip": "^3.10.1",
     "xash3d-fwgs": "latest"
   }
 }

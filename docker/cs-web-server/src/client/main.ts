@@ -35,24 +35,72 @@ async function main() {
     });
 
     const [zip] = await Promise.all([
-        (async () => {
-            const res = await fetch('valve.zip')
-            return await loadAsync(await res.arrayBuffer());
-        })(),
+    (async () => {
+        const cache = await caches.open('cs16-cache');
+        let response = await cache.match('valve.zip');
+        let buffer: ArrayBuffer;
+
+        if (!response) {
+            response = await fetch('valve.zip');
+            const clone = response.clone();
+
+            const reader = response.body!.getReader();
+            const total = parseInt(response.headers.get('Content-Length') || '0', 10);
+            let loaded = 0;
+            const chunks = [];
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.length;
+                const percent = total ? Math.floor((loaded / total) * 100) : 0;
+                const el = document.getElementById('progress');
+                if (el) el.textContent = `Downloading ${percent}%`;
+            }
+
+            const all = new Uint8Array(loaded);
+            let offset = 0;
+            for (const chunk of chunks) {
+                all.set(chunk, offset);
+                offset += chunk.length;
+            }
+
+            buffer = all.buffer;
+            await cache.put('valve.zip', clone);
+        } else {
+            buffer = await response.arrayBuffer();
+            const el = document.getElementById('progress');
+            if (el) el.textContent = `Downloading 100%`;
+        }
+
+        return await loadAsync(buffer);
+    })(),
         x.init(),
-    ])
+    ]);
 
-    await Promise.all(Object.entries(zip.files).map(async ([filename, file]) => {
-        if (file.dir) return;
+    const files = Object.entries(zip.files).filter(([, file]) => !file.dir);
+    const totalFiles = files.length;
+    let loadedFiles = 0;
 
+    await Promise.all(files.map(async ([filename, file]) => {
         const path = '/rodir/' + filename;
         const dir = path.split('/').slice(0, -1).join('/');
 
         x.em.FS.mkdirTree(dir);
         x.em.FS.writeFile(path, await file.async("uint8array"));
-    }))
+
+        loadedFiles++;
+        const progressEl = document.getElementById('progress');
+        if (progressEl) {
+            progressEl.textContent = `Loading: ${Math.floor((loadedFiles / totalFiles) * 100)}%`;
+        }
+    }));
+
 
     x.em.FS.chdir('/rodir')
+    // Enable the start button after loading all files
+    document.getElementById('start-button')!.removeAttribute('disabled');
 
     document.getElementById('logo')!.style.animationName = 'pulsate-end'
     document.getElementById('logo')!.style.animationFillMode = 'forwards'
@@ -85,6 +133,12 @@ if (username) {
     const username = (document.getElementById('username') as HTMLInputElement).value
     localStorage.setItem('username', username);
     (document.getElementById('form') as HTMLFormElement).style.display = 'none'
+    const progressEl = document.getElementById('progress');
+    if (progressEl) {
+        progressEl.style.transition = 'opacity 0.5s ease';
+        progressEl.style.opacity = '0';
+        setTimeout(() => progressEl.remove(), 500);
+    }
     usernamePromiseResolve(username)
 })
 
